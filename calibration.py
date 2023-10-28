@@ -85,6 +85,7 @@ pickle.dump(distortion_coefficients, open( "dist.pkl", "wb" ))
 
 ############## 왜곡 제거 ##############
 img = cv.imread('sample.png')
+orgimg = img.copy()
 h, w = img.shape[:2]
 newCameraMatrix, roi = cv.getOptimalNewCameraMatrix(camera_matrix, distortion_coefficients, (w,h), 1, (w,h))
 
@@ -93,6 +94,17 @@ print("New camera matrix: \n" + str(newCameraMatrix))
 # (x, y, 너비, 높이) 형식으로 제공
 print("ROI: \n" + str(roi))
 
+dst = cv.undistort(img, camera_matrix, distortion_coefficients, None, newCameraMatrix)
 
-cv.undistort(img, camera_matrix, distortion_coefficients, None, newCameraMatrix)
+# 이미지에서 유효한 부분만 잘라낸다
+x, y, w, h = roi
+cropped_dst = dst[y:y+h, x:x+w]
+cropped_orgimg = orgimg[y:y+h, x:x+w]
+
+combined = np.hstack((cropped_orgimg, cropped_dst))
+
+cv.imshow('Original vs Undistorted', combined)
+cv.waitKey(0)
+cv.destroyAllWindows()
+
 
